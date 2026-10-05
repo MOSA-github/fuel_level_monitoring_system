@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-05T14:55:41.929993+00:00",
+  "generated_at": "2026-10-05T17:21:36.489042+00:00",
   "readings": [
     {
       "id": "demo-fuel",
@@ -12,7 +12,7 @@
       "unit": "%",
       "is_demo": true,
       "interval_minutes": 60,
-      "config_hash": "547cf5bc0b6cda53780b5d96a71f51432e1e41711986adc9d7711f3c3d10e00c",
+      "config_hash": "433cfd812a1991b2e08e9bb0cb50a4dc5e66bb516460957f97b5b3cdf43964dd",
       "status": "normal",
       "value": 73.448,
       "percent": 73.45,
@@ -22,8 +22,8 @@
         0.212422
       ],
       "error": null,
-      "attempted_at": "2026-10-05T14:55:41.929993+00:00",
-      "updated_at": "2026-10-05T14:55:41.929993+00:00"
+      "attempted_at": "2026-10-05T17:21:36.489042+00:00",
+      "updated_at": "2026-10-05T17:21:36.489042+00:00"
     }
   ]
 }
