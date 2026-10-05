@@ -1,29 +1,5 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-05T17:21:36.489042+00:00",
-  "readings": [
-    {
-      "id": "demo-fuel",
-      "name": "添付動画の燃料計（検証用）",
-      "facility_id": "DEMO",
-      "device_id": "demo-fuel",
-      "camera_id": "demo",
-      "type": "generator",
-      "unit": "%",
-      "is_demo": true,
-      "interval_minutes": 60,
-      "config_hash": "433cfd812a1991b2e08e9bb0cb50a4dc5e66bb516460957f97b5b3cdf43964dd",
-      "status": "normal",
-      "value": 73.448,
-      "percent": 73.45,
-      "confidence": 0.9141,
-      "needle_point": [
-        0.693074,
-        0.212422
-      ],
-      "error": null,
-      "attempted_at": "2026-10-05T17:21:36.489042+00:00",
-      "updated_at": "2026-10-05T17:21:36.489042+00:00"
-    }
-  ]
+  "generated_at": "2026-10-05T17:26:12.032020+00:00",
+  "readings": []
 }
