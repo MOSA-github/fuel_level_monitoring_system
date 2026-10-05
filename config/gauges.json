@@ -1,58 +1,41 @@
 [
   {
     "id": "demo-fuel",
+    "name": "添付動画の燃料計（検証用）",
     "camera_id": "demo",
     "facility_id": "DEMO",
     "device_id": "demo-fuel",
-    "name": "添付動画の燃料計（検証用）",
     "type": "generator",
-    "unit": "L",
-    "min_value": 0,
-    "max_value": 4500,
-    "direction": "cw",
-    "interval_minutes": 10,
+    "unit": "%",
     "enabled": true,
     "is_demo": true,
+    "interval_minutes": 60,
+    "min_value": 0,
+    "max_value": 100,
+    "direction": "cw",
     "polarity": "dark",
     "min_confidence": 0.25,
     "inner_radius": 0.3,
     "outer_radius": 0.72,
-    "perspective_enabled": true,
-    "points": {
-      "min": [
-        0.16933429150062063,
-        0.4906995735414209
-      ],
-      "center": [
-        0.5393610766316065,
-        0.9000998094546774
-      ],
-      "max": [
-        0.8571241915463513,
-        0.4471463569549043
-      ]
-    },
     "image_size": [
       125,
       90
     ],
-    "perspective_points": {
-      "tl": [
-        0.05644476383354021,
-        0.11323836312494329
+    "points": {
+      "min": [
+        0.144,
+        0.4444444444444444
       ],
-      "tr": [
-        0.9553798915528843,
-        0.06387805099355776
+      "center": [
+        0.544,
+        0.8555555555555555
       ],
-      "br": [
-        0.9679231724047821,
-        0.9175210960892841
-      ],
-      "bl": [
-        0.06898804468543804,
-        0.9668814082206696
+      "max": [
+        0.872,
+        0.37777777777777777
       ]
-    }
+    },
+    "perspective_enabled": false,
+    "perspective_points": {}
   }
 ]

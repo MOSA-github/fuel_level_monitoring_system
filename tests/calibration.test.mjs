@@ -21,3 +21,9 @@ test('browser-side instant analyzer detects a known 50 percent needle',async()=>
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const wx=x-cx,wy=y-cy,t=Math.max(0,Math.min(1,(wx*vx+wy*vy)/den)),dx=x-(cx+t*vx),dy=y-(cy+t*vy);if(dx*dx+dy*dy<=6.25){const i=(y*w+x)*4;data[i]=data[i+1]=data[i+2]=20;}}
   const r=analyzeImageData({width:w,height:h,data},cfg);assert.equal(r.status,'normal');assert.ok(Math.abs(r.value-50)<2);assert.ok(r.confidence>.8);
 });
+
+
+test('fuel is accepted as a first-class measurement type',()=>{
+  const f={...c,type:'fuel',unit:'L',max_value:4500};
+  assert.equal(validate(f).type,'fuel');
+});

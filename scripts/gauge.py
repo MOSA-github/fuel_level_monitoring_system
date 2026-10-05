@@ -61,7 +61,7 @@ def validate(c):
     for key in ("id", "camera_id", "facility_id", "device_id"):
         if not isinstance(c.get(key), str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", c[key]):
             raise ValueError("Invalid identifier: " + key)
-    if c.get("type") not in ("water", "generator"):
+    if c.get("type") not in ("water", "fuel", "generator"):
         raise ValueError("Invalid sensor type")
     if type(c.get("enabled")) is not bool or type(c.get("is_demo")) is not bool:
         raise ValueError("enabled/is_demo must be booleans")

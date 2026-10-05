@@ -136,3 +136,9 @@ python -m http.server 8099 --directory docs
 `is_demo` が `true` の場合は実カメラを使わず `docs/assets/demo-meter.png` を解析します。実カメラ運用では「本番解析でも固定デモ画像を使う」のチェックを外してください。
 
 自動解析は GitHub Actions が5分ごとに起動し、各計器の `interval_minutes` を経過したときだけ、Secret に登録されたURLからその時点の最新JPEGを取得して解析します。校正点①〜③、台形補正4点、検出設定は保存済み設定を毎回再利用します。カメラの設置位置・画角・縦横比が変わった場合は再校正してください。
+
+## 病院ダッシュボードとの役割分担
+
+`fuel_level_monitoring_system` は画像取得・校正・針認識・値換算のみを行います。
+病院・設備の一元管理は `data_test_server_page` に任せ、両者は **施設ID + 設備ID** で接続します。
+詳細は `DATA_SERVER_INTEGRATION.md` を参照してください。

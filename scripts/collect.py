@@ -52,6 +52,7 @@ def collect(force=False):
     now=datetime.now(timezone.utc); stamp=now.isoformat()
     rows=[]; attempted=0
     for c in configs:
+        # Public integration contract: facility_id + device_id identify the hospital equipment.
         base={k:c[k] for k in ("id","name","facility_id","device_id","camera_id","type","unit","is_demo","interval_minutes")}
         digest=hashlib.sha256(json.dumps(c,sort_keys=True).encode()).hexdigest()
         base["config_hash"]=digest

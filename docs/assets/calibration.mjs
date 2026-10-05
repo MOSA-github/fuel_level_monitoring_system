@@ -75,7 +75,7 @@ export function validate(c){
   if(c.perspective_enabled===undefined)c.perspective_enabled=false;
   if(c.perspective_points===undefined)c.perspective_points={};
   for(const k of ['id','camera_id','facility_id','device_id'])if(!/^[A-Za-z0-9_-]{1,80}$/.test(c[k]||''))throw Error(k+' は英数字・ハイフン・_で入力してください。');
-  if(!['water','generator'].includes(c.type)||!['cw','ccw'].includes(c.direction)||!['dark','light'].includes(c.polarity))throw Error('種別・回転方向・針の色が不正です。');
+  if(!['water','fuel','generator'].includes(c.type)||!['cw','ccw'].includes(c.direction)||!['dark','light'].includes(c.polarity))throw Error('種別・回転方向・針の色が不正です。');
   if(typeof c.enabled!=='boolean'||typeof c.is_demo!=='boolean'||typeof c.perspective_enabled!=='boolean')throw Error('有効・検証用・台形補正フラグが不正です。');
   if(!c.name||c.name.length>120||!c.unit||c.unit.length>20)throw Error('名称・単位を入力してください。');
   for(const k of numeric)if(!Number.isFinite(c[k]))throw Error(k+' を数値で入力してください。');
