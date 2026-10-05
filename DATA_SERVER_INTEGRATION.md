@@ -1,33 +1,15 @@
-# data_test_server_page 連携
+# data_test_server_page との連携
 
-このシステムは **計測担当** です。病院一覧・設備台帳は `data_test_server_page` が担当します。
+病院ダッシュボード側では、このシステムが公開する **データURLを貼るだけ**で連携できます。
 
-## 接続キー
-
-公開結果の次の2項目だけで対応します。
+公開URL:
 
 ```text
-facility_id = HOSP-0001
-device_id   = fuel-1
+https://mosa-github.github.io/fuel_level_monitoring_system/data/latest.json
 ```
 
-`data_test_server_page` 側にも同じ施設ID・設備IDの「燃料残量」設備を登録してください。
-カメラURL、アクセストークン、①〜③、台形補正、針検出設定は病院側へコピーしません。
+設定画面の「04 / 本番へ反映」に同じURLを表示し、「URLをコピー」ボタンも用意しています。
 
-## 公開結果
+公開JSONにreadingが1件だけの場合、病院側の設備IDと解析側のIDを一致させる必要はありません。複数計器を1つのURLに含める場合だけ、`facility_id + device_id` または設備IDで対象を選びます。
 
-`docs/data/latest.json` は以下のような公開データを含みます。
-
-```json
-{
-  "facility_id": "HOSP-0001",
-  "device_id": "fuel-1",
-  "type": "fuel",
-  "unit": "L",
-  "value": 3178.322,
-  "percent": 70.63,
-  "status": "normal"
-}
-```
-
-本番カメラURLは引き続き GitHub Actions Secret `CAMERA_SOURCES_JSON` だけに保存します。
+カメラURL、アクセストークン、①〜③、台形補正、針検出条件は病院ダッシュボードへ渡しません。
