@@ -3,9 +3,9 @@ const $=id=>document.getElementById(id),say=t=>$('status').textContent=t;
 const repo='MOSA-github/fuel_level_monitoring_system',key='mosa-gauge-draft-v1';
 const baselines=new Map();
 let configs=[],current=null,selected='min',base=null,baseId=null,objectUrl=null;
-const names={min:'① 最小値',center:'② 針の中心',max:'③ 最大値',reference:'④ 針の先端'};
-const colors={min:'#1bc6b2',center:'#ffffff',max:'#ffa948',reference:'#ff677c'};
-const blank=()=>({id:'gauge-'+Date.now(),camera_id:'1',facility_id:'',device_id:'',name:'新しい計器',type:'water',unit:'%',min_value:0,max_value:100,direction:'cw',interval_minutes:60,enabled:false,is_demo:false,polarity:'dark',min_confidence:.35,inner_radius:.35,outer_radius:.85,points:{},image_size:[]});
+const names={min:'① 最小目盛',center:'② 針の回転中心',max:'③ 最大目盛'};
+const colors={min:'#1bc6b2',center:'#ffffff',max:'#ffa948'};
+const blank=()=>({id:'gauge-'+Date.now(),camera_id:'1',facility_id:'',device_id:'',name:'新しい計器',type:'water',unit:'%',min_value:0,max_value:100,direction:'cw',interval_minutes:60,enabled:false,is_demo:false,polarity:'dark',min_confidence:.35,inner_radius:.30,outer_radius:.72,points:{},image_size:[]});
 const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 function read(){for(const k of fields)current[k]=['enabled','is_demo'].includes(k)?$(k).checked:numeric.includes(k)?($(k).value===''?NaN:Number($(k).value)):$(k).value.trim();return current;}
 function fill(c){current=structuredClone(c);for(const k of fields){if(['enabled','is_demo'].includes(k))$(k).checked=c[k];else $(k).value=c[k]??'';}selected='min';draw();}
@@ -16,17 +16,17 @@ function draw(){
 const c=current,p=c.points||{},[w,h]=c.image_size?.length===2?c.image_size:[1000,700],svg=$('overlay'),radius=Math.max(w,h)*.016,font=radius*1.7;
 svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.replaceChildren();
 const add=(tag,attrs,text)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))el.setAttribute(k,v);if(text)el.textContent=text;svg.append(el);};
-if(p.center)for(const k of ['min','max','reference'])if(p[k])add('line',{x1:p.center[0]*w,y1:p.center[1]*h,x2:p[k][0]*w,y2:p[k][1]*h,stroke:colors[k],'stroke-width':radius*.2,'stroke-dasharray':k==='reference'?'none':radius*.5});
+if(p.center)for(const k of ['min','max'])if(p[k])add('line',{x1:p.center[0]*w,y1:p.center[1]*h,x2:p[k][0]*w,y2:p[k][1]*h,stroke:colors[k],'stroke-width':radius*.2,'stroke-dasharray':radius*.5});
 for(const k of pointKeys)if(p[k]){add('circle',{cx:p[k][0]*w,cy:p[k][1]*h,r:radius,fill:colors[k],stroke:'#163c30','stroke-width':radius*.12});add('text',{x:p[k][0]*w,y:p[k][1]*h+font*.33,'text-anchor':'middle','font-size':font,fill:'#163c30','font-weight':'bold'},String(pointKeys.indexOf(k)+1));}
 $('pointList').textContent=pointKeys.map(k=>names[k]+': '+(p[k]?p[k].map(v=>v.toFixed(3)).join(', '):'未指定')).join(' / ');
 $('coordinateFields').replaceChildren();
 for(const k of pointKeys)for(let axis=0;axis<2;axis++){const l=document.createElement('label');l.textContent=names[k]+' '+['X','Y'][axis];const i=document.createElement('input');Object.assign(i,{type:'number',min:'0',max:'1',step:'any',value:p[k]?.[axis]??''});i.onchange=()=>{const pair=[...(p[k]||[.5,.5])];pair[axis]=Number(i.value);current.points[k]=pair;draw();};l.append(i);$('coordinateFields').append(l);}
 document.querySelectorAll('[data-point]').forEach(b=>b.classList.toggle('active',b.dataset.point===selected));
-try{validate(c);const {span,offset}=geometry(c);$('previewValue').textContent=(c.min_value+offset/span*(c.max_value-c.min_value)).toFixed(2)+' '+c.unit;$('angleInfo').textContent='角度 '+(offset*180/Math.PI).toFixed(1)+'° / '+(span*180/Math.PI).toFixed(1)+'°';}catch(e){$('previewValue').textContent='—';$('angleInfo').textContent=e.message;}
+try{validate(c);const {span}=geometry(c);$('previewValue').textContent='自動検出';$('angleInfo').textContent='校正範囲 '+(span*180/Math.PI).toFixed(1)+'°。現在の針は各更新画像から自動検出します。';}catch(e){$('previewValue').textContent='—';$('angleInfo').textContent=e.message;}
 }
 function upsert(){if(!$('settingsForm').reportValidity())throw Error('入力欄を確認してください。');const c=validate(read());if(baseId&&c.id!==baseId)throw Error('既存の設定IDは変更できません。新しい計器として登録してください。');const next=configs.filter(x=>x.id!==c.id);next.push(c);configs=validateAll(next);choices(c.id);return c;}
 function safe(fn){return async e=>{try{await fn(e);}catch(err){say(err.message||'操作に失敗しました。');}};}
-$('overlay').onclick=e=>{const im=$('cameraImage');if(!im.complete||!im.naturalWidth)return;const box=e.currentTarget.getBoundingClientRect();current.points[selected]=[(e.clientX-box.left)/box.width,(e.clientY-box.top)/box.height];selected=pointKeys[Math.min(3,pointKeys.indexOf(selected)+1)];read();draw();};
+$('overlay').onclick=e=>{const im=$('cameraImage');if(!im.complete||!im.naturalWidth)return;const box=e.currentTarget.getBoundingClientRect();current.points[selected]=[(e.clientX-box.left)/box.width,(e.clientY-box.top)/box.height];selected=pointKeys[Math.min(pointKeys.length-1,pointKeys.indexOf(selected)+1)];read();draw();};
 document.querySelectorAll('[data-point]').forEach(b=>b.onclick=()=>{selected=b.dataset.point;draw();});
 for(const k of fields)$(k).oninput=()=>{read();draw();};
 $('gaugeSelect').onchange=safe(()=>select($('gaugeSelect').value));

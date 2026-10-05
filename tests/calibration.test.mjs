@@ -1,11 +1,12 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validate,validateAll,geometry} from '../docs/assets/calibration.mjs';
+import {validate,validateAll,geometry,pointKeys} from '../docs/assets/calibration.mjs';
 const c=JSON.parse(readFileSync(new URL('./fixtures/demo.json',import.meta.url)))[0];
-test('valid demo and aspect-correct angle',()=>{validate(c);const g=geometry(c);assert.ok(g.offset/g.span>.6&&g.offset/g.span<.85);});
+test('valid demo uses exactly three required calibration points',()=>{validate(c);assert.deepEqual(pointKeys,['min','center','max']);assert.equal(c.points.reference,undefined);const g=geometry(c);assert.ok(g.span>0);});
 test('reject invalid intervals and nonfinite numbers',()=>{for(const v of [0,4,1.5,10081,NaN])assert.throws(()=>validate({...c,interval_minutes:v}));assert.throws(()=>validate({...c,min_value:NaN}));});
-test('reject missing and coincident points',()=>{assert.throws(()=>validate({...c,points:{}}));assert.throws(()=>validate({...c,points:{...c.points,reference:c.points.center}}));});
+test('reject missing and coincident required points',()=>{assert.throws(()=>validate({...c,points:{}}));assert.throws(()=>validate({...c,points:{...c.points,max:c.points.center}}));});
 test('strip unsupported fields including camera source',()=>{assert.equal(validate({...c,source_url:'secret'}).source_url,undefined);});
 test('reject duplicate device mappings',()=>{assert.throws(()=>validateAll([c,{...c,id:'other'}]));});
-test('counterclockwise gives reverse ratio',()=>{const flipped={...c,direction:'ccw',points:{...c.points,min:c.points.max,max:c.points.min}};validate(flipped);assert.ok(Math.abs(geometry(flipped).offset/geometry(flipped).span+geometry(c).offset/geometry(c).span-1)<1e-10);});
+test('counterclockwise keeps a valid sweep',()=>{const flipped={...c,direction:'ccw',points:{...c.points,min:c.points.max,max:c.points.min}};validate(flipped);assert.ok(Math.abs(geometry(flipped).span-geometry(c).span)<1e-10);});
+test('legacy reference point remains accepted but is not required',()=>{const legacy={...c,points:{...c.points,reference:[.68,.32]}};const out=validate(legacy);assert.deepEqual(out.points.reference,[.68,.32]);});

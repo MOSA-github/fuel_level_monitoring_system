@@ -15,8 +15,8 @@
     "direction": "cw",
     "polarity": "dark",
     "min_confidence": 0.25,
-    "inner_radius": 0.35,
-    "outer_radius": 0.85,
+    "inner_radius": 0.3,
+    "outer_radius": 0.72,
     "image_size": [
       125,
       90
@@ -33,10 +33,6 @@
       "max": [
         0.872,
         0.37777777777777777
-      ],
-      "reference": [
-        0.68,
-        0.32222222222222224
       ]
     }
   }

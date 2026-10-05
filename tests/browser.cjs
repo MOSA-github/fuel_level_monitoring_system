@@ -7,10 +7,9 @@ const page=await browser.newPage({viewport:{width:1440,height:1000}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const config=JSON.parse(fs.readFileSync('tests/fixtures/demo.json','utf8'));
 await page.goto('http://localhost:8099/settings.html');
-await page.locator('#previewValue').filter({hasText:'%'}).waitFor();
-const preview=parseFloat(await page.locator('#previewValue').innerText());assert.ok(preview>65&&preview<82);
+await page.locator('#previewValue').filter({hasText:'自動検出'}).waitFor();
 const box=await page.locator('#overlay').boundingBox();
-for(const k of ['min','center','max','reference']){
+for(const k of ['min','center','max']){
  await page.locator('[data-point="'+k+'"]').click();
  await page.mouse.click(box.x+config[0].points[k][0]*box.width,box.y+config[0].points[k][1]*box.height);
 }
@@ -44,7 +43,7 @@ await page.locator('#status').filter({hasText:'別の操作で更新'}).waitFor(
 await page.locator('#clearToken').click();
 assert.equal(await page.locator('#githubToken').inputValue(),'');
 await page.goto('http://localhost:8099/settings.html');
-await page.locator('#previewValue').filter({hasText:'%'}).waitFor();
+await page.locator('#previewValue').filter({hasText:'自動検出'}).waitFor();
 fs.mkdirSync('.local',{recursive:true});
 await page.screenshot({path:'.local/settings-desktop.png',fullPage:true});
 await page.setViewportSize({width:390,height:844});
@@ -71,5 +70,5 @@ await page.getByRole('tab',{name:'貯水・水位',exact:true}).click();
 await page.locator('#waterCards').getByText(/期限切れ/).waitFor();
 assert.match(await page.locator('#waterCards').innerText(),/データなし/);
 assert.deepEqual(errors,[]);
-await browser.close();console.log('Browser checks passed: 4-point editing, interval, draft/export, mocked GitHub save/dispatch/conflict, mobile, data integration and stale handling.');
+await browser.close();console.log('Browser checks passed: 3-point editing, automatic-needle calibration UI, interval, draft/export, mocked GitHub save/dispatch/conflict, mobile, data integration and stale handling.');
 })().catch(e=>{console.error(e);process.exit(1)});

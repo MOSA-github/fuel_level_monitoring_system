@@ -9,16 +9,16 @@ from unittest.mock import patch
 import cv2
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
-from gauge import read_gauge, validate
+from gauge import calibration_radius, read_gauge, validate
 import collect
 
 def config():
-    return {"id":"test","camera_id":"1","facility_id":"HOSP-0001","device_id":"water-1","name":"Test","type":"water","unit":"%","enabled":True,"is_demo":False,"interval_minutes":60,"min_value":0,"max_value":100,"direction":"cw","polarity":"dark","min_confidence":.3,"inner_radius":.35,"outer_radius":.85,"image_size":[400,300],"points":{"min":[.2,.6],"center":[.5,.8],"max":[.8,.6],"reference":[.5,.32]}}
+    return {"id":"test","camera_id":"1","facility_id":"HOSP-0001","device_id":"water-1","name":"Test","type":"water","unit":"%","enabled":True,"is_demo":False,"interval_minutes":60,"min_value":0,"max_value":100,"direction":"cw","polarity":"dark","min_confidence":.3,"inner_radius":.35,"outer_radius":.85,"image_size":[400,300],"points":{"min":[.2,.6],"center":[.5,.8],"max":[.8,.6]}}
 
 def synthetic(c,ratio):
     im=np.full((300,400,3),230,np.uint8)
     from gauge import geometry
-    start,span,_=geometry(c,400,300)
+    start,span=geometry(c,400,300)
     a=start+(1 if c["direction"]=="cw" else -1)*span*ratio
     center=(200,240)
     tip=(round(200+math.cos(a)*140),round(240+math.sin(a)*140))
@@ -52,9 +52,15 @@ class DetectorTests(unittest.TestCase):
         for field,value in [("interval_minutes",0),("interval_minutes",float("nan")),("id","../escape"),("min_value",float("nan")),("max_value",-1),("inner_radius",1),("unit",None)]:
             c=config();c[field]=value
             with self.subTest(field=field),self.assertRaises(ValueError):validate(c)
-    def test_reference_outside_sweep(self):
-        c=config();c["points"]["reference"]=[.5,.95]
-        with self.assertRaises(ValueError):validate(c)
+    def test_three_points_are_sufficient_and_radius_is_derived(self):
+        c=config();validate(c)
+        self.assertGreater(calibration_radius(c,400,300),100)
+        self.assertNotIn("reference",c["points"])
+
+    def test_legacy_reference_is_optional_and_preserves_radius(self):
+        c=config();c["points"]["reference"]=[.5,.32]
+        validate(c)
+        self.assertAlmostEqual(calibration_radius(c,400,300),144,delta=0.1)
     def test_video_sample(self):
         root=Path(__file__).resolve().parents[1]
         c=json.loads((root/"tests/fixtures/demo.json").read_text(encoding="utf-8"))[0]
@@ -77,6 +83,19 @@ class CollectionTests(unittest.TestCase):
                 c["max_value"]=200;(root/"config/gauges.json").write_text(json.dumps([c]))
                 collect.collect();self.assertEqual(fetch.call_count,2)
                 collect.collect(force=True);self.assertEqual(fetch.call_count,3)
+    def test_each_forced_update_redetects_current_needle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c=config();root=self.setup_root(tmp,c)
+            frames=[synthetic(c,.25),synthetic(c,.75)]
+            with patch.object(collect,"ROOT",root),patch.dict("os.environ",{"CAMERA_SOURCES_JSON":'{"1":"secret-source"}'}),patch.object(collect,"fetch_image",side_effect=frames):
+                collect.collect(force=True)
+                first=json.loads((root/"docs/data/latest.json").read_text())["readings"][0]
+                collect.collect(force=True)
+                second=json.loads((root/"docs/data/latest.json").read_text())["readings"][0]
+            self.assertAlmostEqual(first["value"],25,delta=2)
+            self.assertAlmostEqual(second["value"],75,delta=2)
+            self.assertNotEqual(first["needle_point"],second["needle_point"])
+
     def test_missing_secret_never_retains_stale_value(self):
         with tempfile.TemporaryDirectory() as tmp:
             c=config();root=self.setup_root(tmp,c)
