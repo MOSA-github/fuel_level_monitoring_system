@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "id": "fuel-1",
+    "camera_id": "1",
+    "facility_id": "HOSP-0001",
+    "device_id": "fuel-1",
+    "name": "非常用発電機 燃料残量",
+    "type": "fuel",
+    "unit": "L",
+    "min_value": 0,
+    "max_value": 4500,
+    "direction": "cw",
+    "interval_minutes": 10,
+    "enabled": true,
+    "is_demo": true,
+    "polarity": "dark",
+    "min_confidence": 0.35,
+    "inner_radius": 0.3,
+    "outer_radius": 0.72,
+    "perspective_enabled": true,
+    "points": {
+      "min": [
+        0.3407591298098909,
+        0.3693232261148672
+      ],
+      "center": [
+        0.5121839681191611,
+        0.5310387215734481
+      ],
+      "max": [
+        0.6794277128111321,
+        0.37150857064809123
+      ]
+    },
+    "image_size": [
+      715,
+      684
+    ],
+    "perspective_points": {
+      "tl": [
+        0.27595217874175215,
+        0.22071979785563067
+      ],
+      "tr": [
+        0.744234663879271,
+        0.22290514238885475
+      ],
+      "br": [
+        0.744234663879271,
+        0.6337499146349792
+      ],
+      "bl": [
+        0.26968053831580324,
+        0.629379225568531
+      ]
+    }
+  }
+]

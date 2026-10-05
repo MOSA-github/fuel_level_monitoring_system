@@ -1,5 +1,23 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-05T17:26:12.032020+00:00",
-  "readings": []
+  "generated_at": "2026-10-05T17:29:22.703378+00:00",
+  "readings": [
+    {
+      "id": "fuel-1",
+      "name": "非常用発電機 燃料残量",
+      "facility_id": "HOSP-0001",
+      "device_id": "fuel-1",
+      "camera_id": "1",
+      "type": "fuel",
+      "unit": "L",
+      "is_demo": true,
+      "interval_minutes": 10,
+      "config_hash": "88b8b7394dcb82ab931ca9be04fa1b9f11aaec0d674a2dee99ae6c444bdafa2b",
+      "status": "error",
+      "value": null,
+      "error": "acquisition_or_detection_failed",
+      "attempted_at": "2026-10-05T17:29:22.703378+00:00",
+      "updated_at": null
+    }
+  ]
 }
