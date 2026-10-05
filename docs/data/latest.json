@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-05T16:26:26.622020+00:00",
+  "generated_at": "2026-10-05T16:29:35.283875+00:00",
   "readings": [
     {
       "id": "demo-fuel",
@@ -9,21 +9,21 @@
       "device_id": "demo-fuel",
       "camera_id": "demo",
       "type": "generator",
-      "unit": "%",
+      "unit": "L",
       "is_demo": true,
-      "interval_minutes": 60,
-      "config_hash": "433cfd812a1991b2e08e9bb0cb50a4dc5e66bb516460957f97b5b3cdf43964dd",
+      "interval_minutes": 10,
+      "config_hash": "bd1a01ca7b1253b1e6cf91eaec4b63b5e5dc99f792a9ac2abe3df13eef34853f",
       "status": "normal",
-      "value": 73.448,
-      "percent": 73.45,
-      "confidence": 0.9141,
+      "value": 3178.322,
+      "percent": 70.63,
+      "confidence": 0.8174,
       "needle_point": [
-        0.693074,
-        0.212422
+        0.678531,
+        0.280183
       ],
       "error": null,
-      "attempted_at": "2026-10-05T16:26:26.622020+00:00",
-      "updated_at": "2026-10-05T16:26:26.622020+00:00"
+      "attempted_at": "2026-10-05T16:29:35.283875+00:00",
+      "updated_at": "2026-10-05T16:29:35.283875+00:00"
     }
   ]
 }
