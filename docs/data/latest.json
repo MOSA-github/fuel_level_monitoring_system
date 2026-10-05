@@ -1,29 +1,29 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-05T17:32:02.158317+00:00",
+  "generated_at": "2026-10-05T17:34:58.488204+00:00",
   "readings": [
     {
-      "id": "fuel-1",
-      "name": "非常用発電機 燃料残量",
-      "facility_id": "HOSP-0001",
-      "device_id": "fuel-1",
-      "camera_id": "1",
-      "type": "fuel",
-      "unit": "L",
+      "id": "demo-fuel",
+      "name": "添付動画の燃料計（検証用）",
+      "facility_id": "DEMO",
+      "device_id": "demo-fuel",
+      "camera_id": "demo",
+      "type": "generator",
+      "unit": "%",
       "is_demo": true,
-      "interval_minutes": 10,
-      "config_hash": "db00262818a383f1a6488a11e7187c53a92b11a96f96bbc143afdbdec8cba423",
+      "interval_minutes": 60,
+      "config_hash": "433cfd812a1991b2e08e9bb0cb50a4dc5e66bb516460957f97b5b3cdf43964dd",
       "status": "normal",
-      "value": 3179.181,
-      "percent": 70.65,
-      "confidence": 0.8634,
+      "value": 73.448,
+      "percent": 73.45,
+      "confidence": 0.9141,
       "needle_point": [
-        0.678353,
-        0.282469
+        0.693074,
+        0.212422
       ],
       "error": null,
-      "attempted_at": "2026-10-05T17:32:02.158317+00:00",
-      "updated_at": "2026-10-05T17:32:02.158317+00:00"
+      "attempted_at": "2026-10-05T17:34:58.488204+00:00",
+      "updated_at": "2026-10-05T17:34:58.488204+00:00"
     }
   ]
 }

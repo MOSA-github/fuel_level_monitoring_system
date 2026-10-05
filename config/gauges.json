@@ -1,58 +1,41 @@
 [
   {
-    "id": "fuel-1",
-    "camera_id": "1",
-    "facility_id": "HOSP-0001",
-    "device_id": "fuel-1",
-    "name": "非常用発電機 燃料残量",
-    "type": "fuel",
-    "unit": "L",
-    "min_value": 0,
-    "max_value": 4500,
-    "direction": "cw",
-    "interval_minutes": 10,
+    "id": "demo-fuel",
+    "name": "添付動画の燃料計（検証用）",
+    "camera_id": "demo",
+    "facility_id": "DEMO",
+    "device_id": "demo-fuel",
+    "type": "generator",
+    "unit": "%",
     "enabled": true,
     "is_demo": true,
+    "interval_minutes": 60,
+    "min_value": 0,
+    "max_value": 100,
+    "direction": "cw",
     "polarity": "dark",
-    "min_confidence": 0.35,
+    "min_confidence": 0.25,
     "inner_radius": 0.3,
     "outer_radius": 0.72,
-    "perspective_enabled": true,
-    "points": {
-      "min": [
-        0.17560593192656954,
-        0.4994102168587243
-      ],
-      "center": [
-        0.5456327170575553,
-        0.8768714272752018
-      ],
-      "max": [
-        0.8633958319723003,
-        0.4471463569549043
-      ]
-    },
     "image_size": [
       125,
       90
     ],
-    "perspective_points": {
-      "tl": [
-        0.029267655321094925,
-        0.0871064331730333
+    "points": {
+      "min": [
+        0.144,
+        0.4444444444444444
       ],
-      "tr": [
-        0.9679231724047821,
-        0.040649668814082204
+      "center": [
+        0.544,
+        0.8555555555555555
       ],
-      "br": [
-        0.9804664532566799,
-        0.9378459304963251
-      ],
-      "bl": [
-        0.04599202979029202,
-        0.9552672171309319
+      "max": [
+        0.872,
+        0.37777777777777777
       ]
-    }
+    },
+    "perspective_enabled": false,
+    "perspective_points": {}
   }
 ]

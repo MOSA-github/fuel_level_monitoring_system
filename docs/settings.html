@@ -25,7 +25,7 @@
   <button type="button" id="publish" class="primary publish-main">設定を本番へ反映</button><button type="button" id="deleteGauge" class="danger-button publish-delete">この計器を削除</button>
   <p class="hint"><strong>これだけで <code>config/gauges.json</code> の更新・mainへのcommitまで自動で行います。</strong> commit後はGitHub Actionsが自動起動するため、通常は別途commitや「今すぐ解析」は不要です。</p>
 </div>
-<div class="camera-secret-note"><strong>病院ダッシュボード連携：</strong> 病院側には下の<strong>公開データURLを貼るだけ</strong>で連携できます。施設ID・設備IDは公開データにも残りますが、1計器だけのURLなら病院側でIDを合わせる必要はありません。<div class="public-url-row"><code id="publicDataUrl"></code><button type="button" id="copyPublicUrl">URLをコピー</button></div></div>
+<div class="camera-secret-note"><strong>病院ダッシュボード連携：</strong> 病院側には下の<strong>この計器専用JSON URLを貼るだけ</strong>で連携できます。病院側の設備IDと解析側のIDを一致させる必要はありません。<div class="public-url-row"><code id="publicDataUrl"></code><button type="button" id="copyPublicUrl">計器JSON URLをコピー</button></div></div>
 <div class="camera-secret-note"><strong>実カメラを使う場合の初回設定だけ必要：</strong> GitHub Actions Secret <code>CAMERA_SOURCES_JSON</code> に、この画面の「カメラID」とカメラURLの対応を登録します。<a href="https://github.com/MOSA-github/fuel_level_monitoring_system/settings/secrets/actions" target="_blank" rel="noopener">Secret設定を開く ↗</a><br><span id="secretExample"></span></div>
 <details><summary>詳細操作（通常は使いません）</summary><div>
   <p class="hint">下書き保存、JSON入出力、保存済み設定の強制再解析などの管理者向け操作です。</p>

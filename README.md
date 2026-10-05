@@ -2,7 +2,7 @@
 
 [公開結果](https://mosa-github.github.io/fuel_level_monitoring_system/) /
 [画像処理の設定](https://mosa-github.github.io/fuel_level_monitoring_system/settings.html) /
-[最新JSON](https://mosa-github.github.io/fuel_level_monitoring_system/data/latest.json)
+[全計器一覧JSON](https://mosa-github.github.io/fuel_level_monitoring_system/data/latest.json)
 
 ## まず理解しておく操作の違い
 
@@ -142,3 +142,8 @@ python -m http.server 8099 --directory docs
 `fuel_level_monitoring_system` は画像取得・校正・針認識・値換算のみを行います。
 病院・設備の一元管理は `data_test_server_page` に任せます。病院側にはこのシステムの公開 `data/latest.json` URLを登録します。公開JSONが1件だけならID合わせは不要で、複数件の場合だけ施設ID・設備IDで対象を選びます。
 詳細は `DATA_SERVER_INTEGRATION.md` を参照してください。
+
+
+## 病院側への連携
+
+各計器は `docs/data/devices/<設定ID>.json` に1計器専用JSONを公開します。病院管理画面ではこのURLをそのまま登録します。施設ID・設備IDの一致判定は行いません。設定画面の「計器JSON URLをコピー」を使ってください。

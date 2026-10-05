@@ -1,6 +1,7 @@
 import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261006-1';
 const $=id=>document.getElementById(id),say=t=>$('status').textContent=t;
 const repo='MOSA-github/fuel_level_monitoring_system',key='mosa-gauge-draft-v1';
+const publicDeviceUrl=id=>{const safe=String(id||'').trim();return safe&&/^[A-Za-z0-9_-]{1,80}$/.test(safe)?new URL('data/devices/'+safe+'.json',location.href).href:'';};
 const baselines=new Map();
 let configs=[],current=null,selected='min',base=null,baseId=null,objectUrl=null,testNeedlePoint=null,testState=null;
 const names={min:'① 最小目盛',center:'② 針の回転中心',max:'③ 最大目盛'};
@@ -37,7 +38,7 @@ const pCount=perspectiveKeys.filter(k=>pp[k]).length;if($('perspectiveStatus')){
 if($('productionSourceStatus')){const cam=String(c.camera_id||'').replace(/[<>&"']/g,'');if(c.is_demo){$('productionSourceStatus').className='source-status warn';$('productionSourceStatus').innerHTML='<strong>現在の本番ソース：固定デモ画像</strong><br>この状態では自動更新時に実カメラを参照しません。実運用ではこのチェックを外してください。';}else{$('productionSourceStatus').className='source-status ok';$('productionSourceStatus').innerHTML='<strong>現在の本番ソース：実カメラ</strong><br>自動更新時は camera_id = <code>'+cam+'</code> をキーに、GitHub Actions Secret <code>CAMERA_SOURCES_JSON</code> からURLを取得し、その時点の最新JPEGを解析します。上のテスト表示用URLは使いません。';}}
 if($('publishReadiness')){const pts=pointKeys.every(k=>Array.isArray(c.points?.[k]));const persp=!c.perspective_enabled||perspectiveKeys.every(k=>Array.isArray(c.perspective_points?.[k]));const imageOk=Array.isArray(c.image_size)&&c.image_size.length===2;const source=c.is_demo?'固定デモ画像':`実カメラ ID ${String(c.camera_id||'—')}`;$('publishReadiness').innerHTML=`<div class="ready-row ${imageOk&&pts&&persp?'ok':'warn'}"><strong>${imageOk&&pts&&persp?'✓':'!'} 校正</strong><span>${imageOk&&pts&&persp?'①〜③'+(c.perspective_enabled?'・台形補正4点':'')+' 設定済み':'画像・①〜③'+(c.perspective_enabled?'・台形補正4点':'')+'を確認'}</span></div><div class="ready-row ok"><strong>本番画像</strong><span>${source}</span></div>`;}
 if($('secretExample')){const cam=String(c.camera_id||'1').replace(/[<>&"']/g,'');$('secretExample').innerHTML=c.is_demo?'現在は固定デモ画像なのでSecretは使いません。':`現在のカメラIDは <code>${cam}</code> です。Secret例：<code>{"${cam}":"https://camera.mosademy.tech/camera/latest/${cam}?token=..."}</code>`;}
-if($('deleteGauge'))$('deleteGauge').disabled=!baseId;if($('publicDataUrl'))$('publicDataUrl').textContent=new URL('data/latest.json',location.href).href;
+if($('deleteGauge'))$('deleteGauge').disabled=!baseId;if($('publicDataUrl'))$('publicDataUrl').textContent=publicDeviceUrl(c.id)||'設定IDを入力してください';
 $('perspectiveControls').classList.toggle('disabled-controls',!c.perspective_enabled);
 $('coordinateFields').replaceChildren();
 for(const k of pointKeys)for(let axis=0;axis<2;axis++){const l=document.createElement('label');l.textContent=names[k]+' '+['X','Y'][axis];const i=document.createElement('input');Object.assign(i,{type:'number',min:'0',max:'1',step:'any',value:p[k]?.[axis]??''});i.onchange=()=>{const pair=[...(p[k]||[.5,.5])];pair[axis]=Number(i.value);current.points[k]=pair;clearTest();draw();};l.append(i);$('coordinateFields').append(l);}
@@ -133,7 +134,7 @@ $('deleteGauge').onclick=safe(async()=>{
     say('計器を削除し、mainへのcommitまで完了しました。履歴データは残しています。');
   }finally{$('deleteGauge').disabled=false;}
 });
-$('copyPublicUrl').onclick=safe(async()=>{const u=new URL('data/latest.json',location.href).href;await navigator.clipboard.writeText(u);say('公開データURLをコピーしました：'+u);});
+$('copyPublicUrl').onclick=safe(async()=>{read();const u=publicDeviceUrl(current.id);if(!u)throw Error('先に有効な設定IDを入力してください。');await navigator.clipboard.writeText(u);say('この計器専用の公開JSON URLをコピーしました：'+u);});
 $('run').onclick=safe(async()=>{await api('actions/workflows/monitor.yml/dispatches','POST',{ref:'main',inputs:{force:'true'}});say('GitHubに保存済みの設定で即時解析を依頼しました。画面上の未保存変更は使われません。Actionsで実行状況を確認できます。');});
 $('githubToken').oninput=()=>{document.querySelectorAll('.field-invalid').forEach(x=>x.classList.remove('field-invalid'));};
 $('clearToken').onclick=()=>{$('githubToken').value='';say('トークンを消去しました。');};

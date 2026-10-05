@@ -83,6 +83,21 @@ def collect(force=False):
         with archive.open("a",encoding="utf-8") as f: f.write(json.dumps(row,ensure_ascii=False)+"\n")
     payload=previous if rows==previous["readings"] else {"schema_version":1,"generated_at":stamp,"readings":rows}
     output.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+
+    # Publish one direct JSON endpoint per gauge.  Hospital dashboards can bind
+    # a device to this URL directly, without matching facility/device IDs.
+    device_dir = ROOT / "docs/data/devices"
+    device_dir.mkdir(parents=True, exist_ok=True)
+    current_ids = {c["id"] for c in configs}
+    for stale in device_dir.glob("*.json"):
+        if stale.stem not in current_ids:
+            stale.unlink()
+    for row in rows:
+        direct = {"schema_version": 1, **row}
+        (device_dir / f"{row['id']}.json").write_text(
+            json.dumps(direct, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+
     # Public configuration contains no camera credentials.
     (ROOT/"docs/data/gauges.json").write_text(json.dumps(configs,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print("Collected %d gauges; %d attempted; %d errors"%(len(rows),attempted,sum(r["status"]=="error" for r in rows)))

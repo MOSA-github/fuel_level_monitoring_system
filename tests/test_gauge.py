@@ -140,6 +140,17 @@ class CollectionTests(unittest.TestCase):
                 self.assertEqual(json.loads((root/"docs/data/latest.json").read_text())["readings"][0]["status"],"disabled")
                 (root/"config/gauges.json").write_text(json.dumps([c,c]))
                 with self.assertRaises(ValueError):collect.collect()
+    def test_per_device_json_is_published_and_stale_file_removed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c=config();root=self.setup_root(tmp,c)
+            stale=root/"docs/data/devices/stale.json";stale.parent.mkdir(parents=True);stale.write_text("{}")
+            with patch.object(collect,"ROOT",root),patch.dict("os.environ",{"CAMERA_SOURCES_JSON":'{"1":"secret-source"}'}),patch.object(collect,"fetch_image",return_value=synthetic(c,.5)):
+                collect.collect(force=True)
+            direct=json.loads((root/"docs/data/devices/test.json").read_text())
+            self.assertEqual(direct["id"],"test")
+            self.assertAlmostEqual(direct["value"],50,delta=2)
+            self.assertFalse(stale.exists())
+
     def test_source_url_allowlist(self):
         for url in ["http://camera.mosademy.tech/camera/latest/1","https://example.com/a","https://camera.mosademy.tech/admin","https://camera.mosademy.tech.evil.test/camera/latest/1","https://u:p@camera.mosademy.tech/camera/latest/1"]:
             with self.subTest(url=url),self.assertRaises(ValueError):collect.fetch_image(url)
