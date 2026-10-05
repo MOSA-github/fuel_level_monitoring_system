@@ -34,6 +34,8 @@
         0.872,
         0.37777777777777777
       ]
-    }
+    },
+    "perspective_enabled": false,
+    "perspective_points": {}
   }
 ]

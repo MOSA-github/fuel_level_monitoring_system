@@ -8,6 +8,9 @@ const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const config=JSON.parse(fs.readFileSync('tests/fixtures/demo.json','utf8'));
 await page.goto('http://localhost:8099/settings.html');
 await page.locator('#previewValue').filter({hasText:'自動検出'}).waitFor();
+await page.locator('#analyzeTest').click();
+await page.locator('#testResult').filter({hasText:'信頼度'}).waitFor();
+assert.match(await page.locator('#testResult').innerText(),/正常|%|信頼度/);
 const box=await page.locator('#overlay').boundingBox();
 for(const k of ['min','center','max']){
  await page.locator('[data-point="'+k+'"]').click();
@@ -70,5 +73,5 @@ await page.getByRole('tab',{name:'貯水・水位',exact:true}).click();
 await page.locator('#waterCards').getByText(/期限切れ/).waitFor();
 assert.match(await page.locator('#waterCards').innerText(),/データなし/);
 assert.deepEqual(errors,[]);
-await browser.close();console.log('Browser checks passed: 3-point editing, automatic-needle calibration UI, interval, draft/export, mocked GitHub save/dispatch/conflict, mobile, data integration and stale handling.');
+await browser.close();console.log('Browser checks passed: 3-point editing, instant local needle test, optional perspective UI, interval, draft/export, mocked GitHub save/dispatch/conflict, mobile, data integration and stale handling.');
 })().catch(e=>{console.error(e);process.exit(1)});

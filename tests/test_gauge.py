@@ -61,6 +61,30 @@ class DetectorTests(unittest.TestCase):
         c=config();c["points"]["reference"]=[.5,.32]
         validate(c)
         self.assertAlmostEqual(calibration_radius(c,400,300),144,delta=0.1)
+
+    def test_perspective_correction_recovers_keystone_view(self):
+        c=config()
+        frontal=synthetic(c,.65)
+        h,w=frontal.shape[:2]
+        src=np.float32([[0,0],[w-1,0],[w-1,h-1],[0,h-1]])
+        dst=np.float32([[55,35],[350,12],[392,278],[18,294]])
+        H=cv2.getPerspectiveTransform(src,dst)
+        raw=cv2.warpPerspective(frontal,H,(w,h),borderValue=(230,230,230))
+        transformed={}
+        for key,point in c["points"].items():
+            q=cv2.perspectiveTransform(np.float32([[[point[0]*(w-1),point[1]*(h-1)]]]),H)[0,0]
+            transformed[key]=[float(q[0]/(w-1)),float(q[1]/(h-1))]
+        c["points"]=transformed
+        c["perspective_enabled"]=True
+        c["perspective_points"]={k:[float(pt[0]/(w-1)),float(pt[1]/(h-1))] for k,pt in zip(("tl","tr","br","bl"),dst)}
+        r=read_gauge(raw,c)
+        self.assertEqual(r["status"],"normal")
+        self.assertAlmostEqual(r["value"],65,delta=3)
+
+    def test_perspective_requires_four_points_when_enabled(self):
+        c=config();c["perspective_enabled"]=True;c["perspective_points"]={"tl":[0,0]}
+        with self.assertRaises(ValueError):validate(c)
+
     def test_video_sample(self):
         root=Path(__file__).resolve().parents[1]
         c=json.loads((root/"tests/fixtures/demo.json").read_text(encoding="utf-8"))[0]
