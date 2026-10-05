@@ -121,3 +121,18 @@ python -m http.server 8099 --directory docs
 ```
 
 ブラウザE2Eを実行できる環境では `tests/browser.cjs` で、即時針テスト、設定編集、GitHub APIのmock、モバイル表示などを確認できます。
+
+
+## 実カメラと設定画面の画像の違い
+
+設定画面の「テスト用：カメラの最新画像を直接表示する」に入力するURLは、ブラウザで校正・即時解析を確認するためだけに使い、設定JSONには保存しません。
+
+本番の自動解析は `config/gauges.json` の `camera_id` と GitHub Actions Secret `CAMERA_SOURCES_JSON` を対応付けて取得します。たとえば `camera_id` が `fuel-01` なら、Secret は次のようにします。
+
+```json
+{"fuel-01":"https://camera.mosademy.tech/camera/latest/1?token=..."}
+```
+
+`is_demo` が `true` の場合は実カメラを使わず `docs/assets/demo-meter.png` を解析します。実カメラ運用では「本番解析でも固定デモ画像を使う」のチェックを外してください。
+
+自動解析は GitHub Actions が5分ごとに起動し、各計器の `interval_minutes` を経過したときだけ、Secret に登録されたURLからその時点の最新JPEGを取得して解析します。校正点①〜③、台形補正4点、検出設定は保存済み設定を毎回再利用します。カメラの設置位置・画角・縦横比が変わった場合は再校正してください。
