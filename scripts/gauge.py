@@ -18,7 +18,7 @@ import numpy as np
 REQUIRED_POINT_KEYS = ("center", "min", "max")
 PERSPECTIVE_KEYS = ("tl", "tr", "br", "bl")
 BASE_FIELDS = {"id", "camera_id", "facility_id", "device_id", "name", "type", "unit", "enabled", "is_demo", "interval_minutes", "min_value", "max_value", "direction", "polarity", "min_confidence", "inner_radius", "outer_radius", "image_size", "points"}
-OPTIONAL_FIELDS = {"perspective_enabled", "perspective_points"}
+OPTIONAL_FIELDS = {"perspective_enabled", "perspective_points", "demo_image"}
 
 
 def _valid_point(p):
@@ -58,6 +58,8 @@ def _perspective_model(c, w, h):
 def validate(c):
     if not isinstance(c, dict) or not BASE_FIELDS.issubset(c) or not set(c).issubset(BASE_FIELDS | OPTIONAL_FIELDS):
         raise ValueError("Unknown or missing config fields; source URLs belong in Secrets")
+    if "demo_image" in c and (not isinstance(c["demo_image"], str) or not re.fullmatch(r"assets/demo-images/[a-f0-9]{64}\.png", c["demo_image"])):
+        raise ValueError("Invalid demo image path")
     for key in ("id", "camera_id", "facility_id", "device_id"):
         if not isinstance(c.get(key), str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", c[key]):
             raise ValueError("Invalid identifier: " + key)

@@ -54,6 +54,8 @@ def collect(force=False):
     for c in configs:
         # Public integration contract: facility_id + device_id identify the hospital equipment.
         base={k:c[k] for k in ("id","name","facility_id","device_id","camera_id","type","unit","is_demo","interval_minutes")}
+        if c["is_demo"]:
+            base["demo_image"]=c.get("demo_image","assets/demo-meter.png")
         digest=hashlib.sha256(json.dumps(c,sort_keys=True).encode()).hexdigest()
         base["config_hash"]=digest
         if not c["enabled"]:
@@ -65,7 +67,7 @@ def collect(force=False):
         attempted+=1
         try:
             if c["is_demo"]:
-                image=cv2.imread(str(ROOT/"docs/assets/demo-meter.png"))
+                image=cv2.imread(str(ROOT/"docs"/c.get("demo_image","assets/demo-meter.png")))
             elif c["camera_id"] in source:
                 image=fetch_image(source[c["camera_id"]])
             else:

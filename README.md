@@ -115,7 +115,7 @@ URLは `config/gauges.json` や公開データへ保存しません。
 ```sh
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
-node --test tests/calibration.test.mjs
+node --test tests/*.test.mjs
 python scripts/collect.py --force
 python -m http.server 8099 --directory docs
 ```
@@ -133,7 +133,7 @@ python -m http.server 8099 --directory docs
 {"fuel-01":"https://camera.mosademy.tech/camera/latest/1?token=..."}
 ```
 
-`is_demo` が `true` の場合は実カメラを使わず `docs/assets/demo-meter.png` を解析します。実カメラ運用では「本番解析でも固定デモ画像を使う」のチェックを外してください。
+`is_demo` が `true` の場合は実カメラを使わず、設定の `demo_image` が指す保存済み画像を解析します。`demo_image` がない既存設定は標準サンプル `docs/assets/demo-meter.png` を使用します。実カメラ運用では「本番解析でも固定デモ画像を使う」のチェックを外してください。
 
 自動解析は GitHub Actions が5分ごとに起動し、各計器の `interval_minutes` を経過したときだけ、Secret に登録されたURLからその時点の最新JPEGを取得して解析します。校正点①〜③、台形補正4点、検出設定は保存済み設定を毎回再利用します。カメラの設置位置・画角・縦横比が変わった場合は再校正してください。
 
@@ -147,3 +147,21 @@ python -m http.server 8099 --directory docs
 ## 病院側への連携
 
 各計器は `docs/data/devices/<設定ID>.json` に1計器専用JSONを公開します。病院管理画面ではこのURLをそのまま登録します。施設ID・設備IDの一致判定は行いません。設定画面の「計器JSON URLをコピー」を使ってください。
+
+## デモ画像をアプリから変更する
+
+1. 設定ページの「画像ファイルを選ぶ」でPNG・JPEG・WebPを読み込む（10MB以下）。
+2. その画像に合わせて①〜③、必要なら台形補正を設定し、針の解析テストを行う。
+3. 「本番解析でも固定デモ画像を使う」をONにする。
+4. GitHubトークンを入力し「設定を本番へ反映」を押す。
+5. Actionsによる解析・Pages公開の完了後、ページを再読込する。以後は選択した画像を表示・解析する。
+
+画像はPNGへ変換し、計器ごとの `demo_image: assets/demo-images/<SHA-256>.png` を設定に保存する。
+同じ画像は同じパス、別の画像は別のパスとなるため、画像を変更してもブラウザの古いキャッシュを参照しない。
+画像と校正設定はGitHub Git Data APIで同じcommitに含め、mainをfast-forwardで更新する。
+同時更新を検知した場合は他の変更を上書きせずエラーにする。Contentsのwrite権限が必要。
+画像を別の計器に流用しても、各設定の参照先は独立している。過去に使った画像は履歴との対応を保つため残す。
+
+デモ画像は公開サイトとリポジトリで公開される。実カメラ設定（is_demo=false）でテストするために選んだ画像はアップロードしない。
+ブラウザの下書き保存・設定JSONの書出しは画像ファイルを保存しない。画像を保存するには本番への反映を使う。
+以前のバージョンで選択した画像はGitHubへ保存されていないため、修正版で再選択して本番へ反映する必要がある。

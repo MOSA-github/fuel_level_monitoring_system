@@ -1,9 +1,11 @@
-import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261006-1';
+import {demoImagePath,prepareDemoImage} from './demo-image.mjs';
+import {publishGauge} from './github-publish.mjs';
+import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261013-1';
 const $=id=>document.getElementById(id),say=t=>$('status').textContent=t;
 const repo='MOSA-github/fuel_level_monitoring_system',key='mosa-gauge-draft-v1';
 const publicDeviceUrl=id=>{const safe=String(id||'').trim();return safe&&/^[A-Za-z0-9_-]{1,80}$/.test(safe)?new URL('data/devices/'+safe+'.json',location.href).href:'';};
 const baselines=new Map();
-let configs=[],current=null,selected='min',base=null,baseId=null,objectUrl=null,testNeedlePoint=null,testState=null;
+let configs=[],current=null,selected='min',base=null,baseId=null,objectUrl=null,testNeedlePoint=null,testState=null,pendingDemoImage=null,imagePreparing=false,imagePreparationFailed=false;
 const names={min:'① 最小目盛',center:'② 針の回転中心',max:'③ 最大目盛'};
 const warpNames={tl:'左上',tr:'右上',br:'右下',bl:'左下'};
 const colors={min:'#1bc6b2',center:'#ffffff',max:'#ffa948'};
@@ -18,8 +20,9 @@ function clearTest(message='未実行'){testNeedlePoint=null;testState=null;if($
 function fill(c){current=structuredClone(c);current.perspective_enabled=!!current.perspective_enabled;current.perspective_points=current.perspective_points||{};for(const k of fields){if(checkFields.includes(k))$(k).checked=!!current[k];else $(k).value=current[k]??'';}selected='min';clearTest();draw();}
 function choices(id){$('gaugeSelect').replaceChildren(...configs.map(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name+' / '+c.id;return o}));$('gaugeSelect').value=id;}
 async function image(src){return new Promise((resolve,reject)=>{const im=$('cameraImage');im.onload=()=>{current.image_size=[im.naturalWidth,im.naturalHeight];$('imageSize').textContent=im.naturalWidth+' × '+im.naturalHeight;if(current.perspective_enabled&&!Object.keys(current.perspective_points||{}).length)current.perspective_points={tl:[0,0],tr:[1,0],br:[1,1],bl:[0,1]};clearTest();draw();resolve();};im.onerror=()=>{im.removeAttribute('src');say('画像を取得できません。URL・認証またはファイル形式を確認してください。');reject(Error('画像取得失敗'));};im.src=src;});}
-async function select(id){const c=configs.find(x=>x.id===id);if(!c)return;base=baselines.get(c.id)||null;baseId=base?c.id:null;fill(c);$('imageUrl').value='';if(c.is_demo)await image('assets/demo-meter.png');else{$('cameraImage').removeAttribute('src');$('imageSize').textContent='カメラ画像を読み込んでください';}}
+async function select(id){pendingDemoImage=null;imagePreparationFailed=false;const c=configs.find(x=>x.id===id);if(!c)return;base=baselines.get(c.id)||null;baseId=base?c.id:null;fill(c);$('imageUrl').value='';if(c.is_demo)await image(demoImagePath(current));else{$('cameraImage').removeAttribute('src');$('imageSize').textContent='カメラ画像を読み込んでください';}}
 function draw(){
+if($('demoImageStatus'))$('demoImageStatus').textContent=pendingDemoImage?(current.is_demo?'選択画像：未保存。本番へ反映するとこの画像をデモ画像として公開します。':'選択画像：テスト表示中。デモ保存には固定デモ画像をONにしてください。'):(current.demo_image?'保存済みの専用デモ画像を使用します。':'デモ画像の登録がないため、標準サンプルを使用します。');
 const c=current,p=c.points||{},pp=c.perspective_points||{},[w,h]=c.image_size?.length===2?c.image_size:[1000,700],svg=$('overlay'),radius=Math.max(w,h)*.016,font=radius*1.7;
 svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.replaceChildren();
 const add=(tag,attrs,text)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))el.setAttribute(k,v);if(text)el.textContent=text;svg.append(el);return el;};
@@ -46,7 +49,7 @@ document.querySelectorAll('[data-point]').forEach(b=>b.classList.toggle('active'
 document.querySelectorAll('[data-warp]').forEach(b=>b.classList.toggle('active',b.dataset.warp===selected));
 try{const vc=validate(c);const {span,space}=geometry(vc);$('previewValue').textContent='自動検出';$('angleInfo').textContent='校正範囲 '+(span*180/Math.PI).toFixed(1)+'°'+(vc.perspective_enabled?' / 台形補正後 '+space.width+'×'+space.height+' px':'')+'。針は各更新画像から自動検出します。';}catch(e){$('previewValue').textContent='—';$('angleInfo').textContent=e.message;}
 }
-function upsert(){read();const bad=firstInvalid();if(bad)throw Error(bad);let c;try{c=validate(current);}catch(err){throw Error('設定を確認してください：'+(err?.message||'入力内容が不正です。'));}const oldId=baseId;const conflict=configs.find(x=>x.id===c.id&&x.id!==oldId);if(conflict)throw Error(`設定ID「${c.id}」は別の計器で使用されています。別のIDにしてください。`);const next=configs.filter(x=>x.id!==oldId&&x.id!==c.id);next.push(c);configs=validateAll(next);current=structuredClone(c);choices(c.id);return {config:c,oldId};}
+function upsert(){read();if(imagePreparing)throw Error("画像の準備が終わるまでお待ちください。");if(current.is_demo&&imagePreparationFailed)throw Error("保存用画像を作成できませんでした。画像を再選択してください。");const bad=firstInvalid();if(bad)throw Error(bad);let c;try{c=validate(current);}catch(err){throw Error('設定を確認してください：'+(err?.message||'入力内容が不正です。'));}const oldId=baseId;const conflict=configs.find(x=>x.id===c.id&&x.id!==oldId);if(conflict)throw Error(`設定ID「${c.id}」は別の計器で使用されています。別のIDにしてください。`);const next=configs.filter(x=>x.id!==oldId&&x.id!==c.id);next.push(c);configs=validateAll(next);current=structuredClone(c);choices(c.id);return {config:c,oldId};}
 function safe(fn){return async e=>{try{await fn(e);}catch(err){say(err.message||'操作に失敗しました。');}};}
 $('overlay').onclick=e=>{const im=$('cameraImage');if(!im.complete||!im.naturalWidth)return;const box=e.currentTarget.getBoundingClientRect(),pair=[(e.clientX-box.left)/box.width,(e.clientY-box.top)/box.height];if(perspectiveKeys.includes(selected)){if(!current.perspective_enabled)return;current.perspective_points=current.perspective_points||{};current.perspective_points[selected]=pair;selected=perspectiveKeys[Math.min(perspectiveKeys.length-1,perspectiveKeys.indexOf(selected)+1)];}else{current.points[selected]=pair;selected=pointKeys[Math.min(pointKeys.length-1,pointKeys.indexOf(selected)+1)];}clearTest();read();draw();};
 document.querySelectorAll('[data-point]').forEach(b=>b.onclick=()=>{selected=b.dataset.point;draw();});
@@ -56,10 +59,22 @@ $('perspective_enabled').onchange=()=>{read();if(current.perspective_enabled&&!O
 $('perspectiveFullFrame').onclick=()=>{current.perspective_enabled=true;$('perspective_enabled').checked=true;current.perspective_points={tl:[0,0],tr:[1,0],br:[1,1],bl:[0,1]};selected='tl';clearTest();draw();};
 $('clearPerspective').onclick=()=>{current.perspective_points={};selected='tl';clearTest();draw();};
 $('gaugeSelect').onchange=safe(()=>select($('gaugeSelect').value));
-$('newGauge').onclick=()=>{base=null;baseId=null;fill(blank());$('gaugeSelect').value='';$('cameraImage').removeAttribute('src');$('imageSize').textContent='カメラ画像を読み込んでください';};
-$('imageFile').onchange=safe(async()=>{const f=$('imageFile').files[0];if(!f)return;if(f.size>10*1024*1024)throw Error('画像は10MB以下にしてください。');if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(f);await image(objectUrl);});
-$('demoImage').onclick=safe(async()=>{if(!current.is_demo)throw Error('動画サンプルは「検証用の固定画像を使う」を有効にして利用してください。');await image('assets/demo-meter.png');});
-$('loadCamera').onclick=safe(async()=>{const u=new URL($('imageUrl').value);if(u.protocol!=='https:'||u.hostname!=='camera.mosademy.tech'||u.username||u.password||!/^\/camera\/latest\/[A-Za-z0-9_-]+$/.test(u.pathname))throw Error('許可されたカメラ最新JPEG URLを指定してください。');await image(u.href);say('カメラ最新画像をテスト表示しました。このURLは本番設定には保存されません。自動更新は camera_id と CAMERA_SOURCES_JSON を使用します。');});
+$('newGauge').onclick=()=>{pendingDemoImage=null;imagePreparationFailed=false;base=null;baseId=null;fill(blank());$('gaugeSelect').value='';$('cameraImage').removeAttribute('src');$('imageSize').textContent='カメラ画像を読み込んでください';};
+$('imageFile').onchange=safe(async()=>{
+  const f=$('imageFile').files[0];if(!f)return;
+  if(!['image/png','image/jpeg','image/webp'].includes(f.type))throw Error('PNG・JPEG・WebP画像を選択してください。');
+  if(f.size>10*1024*1024)throw Error('画像は10MB以下にしてください。');
+  if(imagePreparing)throw Error('画像の準備が終わるまでお待ちください。');
+  imagePreparing=true;imagePreparationFailed=true;$('publish').disabled=true;
+  try{
+  pendingDemoImage=null;if(objectUrl)URL.revokeObjectURL(objectUrl);
+  objectUrl=URL.createObjectURL(f);await image(objectUrl);
+  pendingDemoImage=await prepareDemoImage($('cameraImage'));imagePreparationFailed=false;$('imageFile').value='';draw();
+  say(current.is_demo?'選択した画像をデモ画像として保存する準備ができました。「設定を本番へ反映」で画像と校正設定を一緒にGitHubへ保存します。':'画像をテスト表示しています。デモ画像として保存する場合は「固定デモ画像を使う」をONにして本番へ反映してください。');
+  }finally{imagePreparing=false;$('publish').disabled=false;}
+});
+$('demoImage').onclick=safe(async()=>{pendingDemoImage=null;imagePreparationFailed=false;if(!current.is_demo)throw Error('「本番解析でも固定デモ画像を使う」をONにしてください。');await image(demoImagePath(current));});
+$('loadCamera').onclick=safe(async()=>{pendingDemoImage=null;const u=new URL($('imageUrl').value);if(u.protocol!=='https:'||u.hostname!=='camera.mosademy.tech'||u.username||u.password||!/^\/camera\/latest\/[A-Za-z0-9_-]+$/.test(u.pathname))throw Error('許可されたカメラ最新JPEG URLを指定してください。');await image(u.href);say('カメラ最新画像をテスト表示しました。このURLは本番設定には保存されません。自動更新は camera_id と CAMERA_SOURCES_JSON を使用します。');});
 async function runInstantAnalysis(){
   const button=$('analyzeTest'),resultBox=$('testResult');
   button.disabled=true;
@@ -110,11 +125,21 @@ $('analyzeTest').addEventListener('click',runInstantAnalysis);
 $('testResult').textContent='準備完了（クリックで即時解析できます）';
 $('analyzeTest').dataset.handlerReady='true';
 $('settingsForm').onsubmit=safe(e=>{e.preventDefault();upsert();localStorage.setItem(key,JSON.stringify(configs));say('このブラウザに下書きを保存しました。本番にはまだ反映されていません。GitHubへ設定を反映するか、JSONをcommit・pushしてください。');});
-$('restore').onclick=safe(async()=>{const raw=localStorage.getItem(key);if(!raw)throw Error('保存済みの下書きはありません。');configs=validateAll(JSON.parse(raw));choices(configs[0]?.id);if(configs.length){base=baselines.get(configs[0].id)||null;baseId=base?base.id:null;fill(configs[0]);if(current.is_demo)await image('assets/demo-meter.png');}say('下書きを復元しました。これはブラウザ内の下書きです。本番反映にはGitHubへの保存が必要です。');});
+$('restore').onclick=safe(async()=>{pendingDemoImage=null;const raw=localStorage.getItem(key);if(!raw)throw Error('保存済みの下書きはありません。');configs=validateAll(JSON.parse(raw));choices(configs[0]?.id);if(configs.length){base=baselines.get(configs[0].id)||null;baseId=base?base.id:null;fill(configs[0]);if(current.is_demo)await image(demoImagePath(current));}say('下書きを復元しました。これはブラウザ内の下書きです。本番反映にはGitHubへの保存が必要です。');});
 $('export').onclick=safe(()=>{upsert();const url=URL.createObjectURL(new Blob([JSON.stringify(configs,null,2)+'\n'],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='gauges.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);say('gauges.jsonを書き出しました。手動方式では、これを config/gauges.json に反映してcommit・pushしてください。');});
-$('import').onchange=safe(async()=>{const f=$('import').files[0];if(!f)return;if(f.size>1000000)throw Error('JSONが大きすぎます。');configs=validateAll(JSON.parse(await f.text()));choices(configs[0]?.id);base=baselines.get(configs[0]?.id)||null;baseId=base?base.id:null;$('cameraImage').removeAttribute('src');if(configs.length)fill(configs[0]);say('設定を読み込みました。GitHubへは現在選択中の1件だけを反映します。');});
+$('import').onchange=safe(async()=>{pendingDemoImage=null;const f=$('import').files[0];if(!f)return;if(f.size>1000000)throw Error('JSONが大きすぎます。');configs=validateAll(JSON.parse(await f.text()));choices(configs[0]?.id);base=baselines.get(configs[0]?.id)||null;baseId=base?base.id:null;$('cameraImage').removeAttribute('src');if(configs.length)fill(configs[0]);say('設定を読み込みました。GitHubへは現在選択中の1件だけを反映します。');});
 async function api(path,method='GET',body){const token=$('githubToken').value.trim();if(!token)throw Error('GitHubトークンを入力してください。');const r=await fetch('https://api.github.com/repos/'+repo+'/'+path,{method,headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},body:body?JSON.stringify(body):undefined});if(!r.ok)throw Error('GitHub API '+r.status+'：権限・同時更新・Actions設定を確認してください。');return r.status===204?null:r.json();}
-$('publish').onclick=safe(async()=>{const {config:c,oldId}=upsert();$('publish').disabled=true;try{const file=await api('contents/config/gauges.json?ref=main');const remote=validateAll(JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(file.content.replace(/\s/g,'')),ch=>ch.charCodeAt(0)))));const remoteOld=oldId?remote.find(x=>x.id===oldId):null;if(oldId&&base&&remoteOld&&!equal(remoteOld,validate(base)))throw Error('公開設定が別の操作で更新されています。ページを再読み込みしてから編集してください。');if(oldId&&base&&!remoteOld)throw Error('この計器は既に削除されています。ページを再読み込みしてください。');if(c.id!==oldId&&remote.some(x=>x.id===c.id))throw Error(`変更先の設定ID「${c.id}」は既に使われています。`);const merged=validateAll([...remote.filter(x=>x.id!==oldId&&x.id!==c.id),c]);const bytes=new TextEncoder().encode(JSON.stringify(merged,null,2)+'\n');let binary='';for(const b of bytes)binary+=String.fromCharCode(b);await api('contents/config/gauges.json','PUT',{message:(oldId&&oldId!==c.id?`Rename gauge ${oldId} to ${c.id}`:'Update gauge calibration: '+c.id),branch:'main',sha:file.sha,content:btoa(binary)});configs=merged;if(oldId&&oldId!==c.id)baselines.delete(oldId);base=structuredClone(c);baselines.set(c.id,base);baseId=c.id;choices(c.id);draw();say('本番反映が完了しました。設定IDの変更を含め、mainへのcommitまで自動実行済みです。別途commitは不要です。');}finally{$('publish').disabled=false;}});
+$('publish').onclick=safe(async()=>{
+  const {config,oldId}=upsert(),upload=config.is_demo?pendingDemoImage:null;
+  const c=validate(upload?{...config,demo_image:upload.path}:config);
+  $('publish').disabled=true;
+  try{
+    const merged=await publishGauge(api,c,oldId,base,upload);
+    configs=merged;if(oldId&&oldId!==c.id)baselines.delete(oldId);
+    current=structuredClone(c);base=structuredClone(c);baselines.set(c.id,base);baseId=c.id;pendingDemoImage=null;choices(c.id);draw();
+    say(upload?'本番反映が完了しました。選択画像と校正設定を同じcommitでGitHubへ保存しました。Actionsの解析・公開完了後、再読込でもこの画像が使われます。':'本番反映が完了しました。設定をmainへcommitしました。別途commitは不要です。');
+  }finally{$('publish').disabled=false;}
+});
 $('deleteGauge').onclick=safe(async()=>{
   if(!baseId)throw Error('まだ本番登録されていない新規計器です。削除する必要はありません。');
   const targetId=baseId;

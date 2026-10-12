@@ -36,7 +36,7 @@ jobs:
       - name: Test detector and calibration
         run: |
           python -m unittest discover -s tests -v
-          node --test tests/calibration.test.mjs
+          node --test tests/*.test.mjs
       - name: Collect due readings
         env:
           CAMERA_SOURCES_JSON: ${{ secrets.CAMERA_SOURCES_JSON }}

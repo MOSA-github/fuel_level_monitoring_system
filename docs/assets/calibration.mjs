@@ -1,3 +1,4 @@
+import {validDemoImagePath} from './demo-image.mjs';
 export const pointKeys=['min','center','max'];
 export const perspectiveKeys=['tl','tr','br','bl'];
 export const fields=['id','camera_id','facility_id','device_id','name','type','unit','min_value','max_value','direction','interval_minutes','enabled','is_demo','polarity','min_confidence','inner_radius','outer_radius','perspective_enabled'];
@@ -84,6 +85,7 @@ export function validate(c){
   if(!Array.isArray(c.image_size)||c.image_size.length!==2||c.image_size.some(x=>!Number.isInteger(x)||x<16||x>12000))throw Error('基準画像を読み込んでください。');
   for(const k of pointKeys){const p=c.points?.[k];if(!finitePoint(p))throw Error('①〜③の基準点を指定してください。');}
   for(const k of ['min','max'])if(Math.hypot(c.points[k][0]-c.points.center[0],c.points[k][1]-c.points.center[1])<.02)throw Error('基準点が針の中心に近すぎます。');
+  if(c.demo_image!==undefined&&!validDemoImagePath(c.demo_image))throw Error('デモ画像の保存先が不正です。');
   const cleanPerspective={};
   for(const k of perspectiveKeys)if(finitePoint(c.perspective_points?.[k]))cleanPerspective[k]=structuredClone(c.perspective_points[k]);
   c.perspective_points=cleanPerspective;
@@ -91,7 +93,7 @@ export function validate(c){
   const {span}=geometry(c);if(span<5*Math.PI/180||span>350*Math.PI/180)throw Error('回転方向と①③の位置を確認してください。');
   const points=Object.fromEntries(pointKeys.map(k=>[k,structuredClone(c.points[k])]));
   if(finitePoint(c.points?.reference))points.reference=structuredClone(c.points.reference);
-  return Object.fromEntries([...fields].map(k=>[k,structuredClone(c[k])]).concat([['points',points],['image_size',structuredClone(c.image_size)],['perspective_points',cleanPerspective]]));
+  return Object.fromEntries([...fields].map(k=>[k,structuredClone(c[k])]).concat([['points',points],['image_size',structuredClone(c.image_size)],['perspective_points',cleanPerspective]],c.demo_image===undefined?[]:[['demo_image',c.demo_image]]));
 }
 
 export function validateAll(cs){if(!Array.isArray(cs)||cs.length>100)throw Error('設定は100件以下の配列にしてください。');const ids=new Set(),targets=new Set();return cs.map(c=>{c=validate(c);const target=c.facility_id+'/'+c.device_id;if(ids.has(c.id)||targets.has(target))throw Error('設定IDまたは施設・設備IDが重複しています。');ids.add(c.id);targets.add(target);return c;});}
