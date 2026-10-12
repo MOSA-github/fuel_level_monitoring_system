@@ -8,11 +8,18 @@
   "type": "generator",
   "unit": "L",
   "is_demo": true,
-  "interval_minutes": 60,
-  "config_hash": "b0fc17bd951e70ce6f66e04ef409a58fa00dd54593b0fbd4e083ec9a4f41a343",
-  "status": "error",
-  "value": null,
-  "error": "acquisition_or_detection_failed",
-  "attempted_at": "2026-10-12T21:02:35.626816+00:00",
-  "updated_at": null
+  "interval_minutes": 5,
+  "demo_image": "assets/demo-images/1c01a34e6d9a828470c963a12e8097aba061b0e4f79840de54c0f7d7e26d7be7.png",
+  "config_hash": "6826a75628a3018f06f3e092db09134b42b16709054681373d017f889939bf96",
+  "status": "normal",
+  "value": 3232.852,
+  "percent": 71.84,
+  "confidence": 0.8592,
+  "needle_point": [
+    0.593152,
+    0.310741
+  ],
+  "error": null,
+  "attempted_at": "2026-10-12T21:20:55.389329+00:00",
+  "updated_at": "2026-10-12T21:20:55.389329+00:00"
 }

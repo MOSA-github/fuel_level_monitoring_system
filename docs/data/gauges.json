@@ -10,14 +10,14 @@
     "min_value": 0,
     "max_value": 4500,
     "direction": "cw",
-    "interval_minutes": 60,
+    "interval_minutes": 5,
     "enabled": true,
     "is_demo": true,
     "polarity": "dark",
     "min_confidence": 0.25,
     "inner_radius": 0.3,
     "outer_radius": 0.72,
-    "perspective_enabled": false,
+    "perspective_enabled": true,
     "points": {
       "min": [
         0.34111036603695055,
@@ -36,6 +36,24 @@
       715,
       684
     ],
-    "perspective_points": {}
+    "perspective_points": {
+      "tl": [
+        0.2725228229022195,
+        0.21338420622155113
+      ],
+      "tr": [
+        0.7367480082692133,
+        0.22420232657314004
+      ],
+      "br": [
+        0.7382264324264329,
+        0.6291091168754679
+      ],
+      "bl": [
+        0.26660912627334066,
+        0.6260182253464425
+      ]
+    },
+    "demo_image": "assets/demo-images/1c01a34e6d9a828470c963a12e8097aba061b0e4f79840de54c0f7d7e26d7be7.png"
   }
 ]
