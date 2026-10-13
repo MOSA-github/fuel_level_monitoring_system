@@ -1,6 +1,6 @@
 import {demoImagePath,prepareDemoImage} from './demo-image.mjs';
 import {publishGauge} from './github-publish.mjs';
-import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261013-3';
+import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261013-4';
 const $=id=>document.getElementById(id),say=t=>$('status').textContent=t;
 const repo='MOSA-github/fuel_level_monitoring_system',key='mosa-gauge-draft-v1';
 const publicDeviceUrl=id=>{const safe=String(id||'').trim();return safe&&/^[A-Za-z0-9_-]{1,80}$/.test(safe)?new URL('data/devices/'+safe+'.json',location.href).href:'';};
@@ -54,7 +54,7 @@ function safe(fn){return async e=>{try{await fn(e);}catch(err){say(err.message||
 $('overlay').onclick=e=>{const im=$('cameraImage');if(!im.complete||!im.naturalWidth)return;const box=e.currentTarget.getBoundingClientRect(),pair=[(e.clientX-box.left)/box.width,(e.clientY-box.top)/box.height];if(perspectiveKeys.includes(selected)){if(!current.perspective_enabled)return;current.perspective_points=current.perspective_points||{};current.perspective_points[selected]=pair;selected=perspectiveKeys[Math.min(perspectiveKeys.length-1,perspectiveKeys.indexOf(selected)+1)];}else{current.points[selected]=pair;selected=pointKeys[Math.min(pointKeys.length-1,pointKeys.indexOf(selected)+1)];}clearTest();read();draw();};
 document.querySelectorAll('[data-point]').forEach(b=>b.onclick=()=>{selected=b.dataset.point;draw();});
 document.querySelectorAll('[data-warp]').forEach(b=>b.onclick=()=>{if(!current.perspective_enabled){current.perspective_enabled=true;$('perspective_enabled').checked=true;}selected=b.dataset.warp;clearTest();draw();});
-for(const k of fields)$(k).oninput=()=>{read();clearTest();draw();};
+for(const k of fields)$(k).oninput=()=>{if(k==='type'&&$('type').value==='power'&&['','%','L'].includes($('unit').value.trim()))$('unit').value='W';read();clearTest();draw();};
 $('perspective_enabled').onchange=()=>{read();if(current.perspective_enabled&&!Object.keys(current.perspective_points||{}).length&&current.image_size?.length===2)current.perspective_points={tl:[0,0],tr:[1,0],br:[1,1],bl:[0,1]};selected=current.perspective_enabled?'tl':'min';clearTest();draw();};
 $('perspectiveFullFrame').onclick=()=>{current.perspective_enabled=true;$('perspective_enabled').checked=true;current.perspective_points={tl:[0,0],tr:[1,0],br:[1,1],bl:[0,1]};selected='tl';clearTest();draw();};
 $('clearPerspective').onclick=()=>{current.perspective_points={};selected='tl';clearTest();draw();};

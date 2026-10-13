@@ -27,3 +27,5 @@ test('fuel is accepted as a first-class measurement type',()=>{
   const f={...c,type:'fuel',unit:'L',max_value:4500};
   assert.equal(validate(f).type,'fuel');
 });
+
+test('power is accepted with W or kW in public configurations',()=>{for(const unit of ['W','kW']){const result=validate({...c,type:'power',unit,max_value:1000});assert.equal(result.type,'power');assert.equal(result.unit,unit);}});
