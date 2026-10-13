@@ -130,5 +130,5 @@ export function analyzeImageData(imageData,input){
   const confidence=Math.max(0,Math.min(1,(peak-second)/Math.max(peak,1)))*Math.min(1,peak/18),valid=confidence>=c.min_confidence&&peak>=4;
   const ratio=bestOffset/span,theta=start+sign*bestOffset;
   let tip=[cx+Math.cos(theta)*radius,cy+Math.sin(theta)*radius];if(model)tip=transformPoint(model.inverse,tip);
-  return {status:valid?'normal':'error',value:valid?Math.round((c.min_value+ratio*(c.max_value-c.min_value))*1000)/1000:null,percent:valid?Math.round(ratio*10000)/100:null,confidence:Math.round(confidence*10000)/10000,needle_point:model?[tip[0]/(rawW-1),tip[1]/(rawH-1)]:[tip[0]/rawW,tip[1]/rawH],error:valid?null:'low_confidence'};
+  return {status:valid?'normal':'error',value:valid?Math.round((c.min_value+ratio*(c.max_value-c.min_value))*10)/10:null,percent:valid?Math.round(ratio*1000)/10:null,confidence:Math.round(confidence*10000)/10000,needle_point:model?[tip[0]/(rawW-1),tip[1]/(rawH-1)]:[tip[0]/rawW,tip[1]/rawH],error:valid?null:'low_confidence'};
 }

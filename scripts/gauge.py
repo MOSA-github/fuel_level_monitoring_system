@@ -211,8 +211,8 @@ def read_gauge(image, c):
 
     return {
         "status": "normal" if valid else "error",
-        "value": round(dc["min_value"] + ratio * (dc["max_value"] - dc["min_value"]), 3) if valid else None,
-        "percent": round(ratio * 100, 2) if valid else None,
+        "value": round(dc["min_value"] + ratio * (dc["max_value"] - dc["min_value"]), 1) if valid else None,
+        "percent": round(ratio * 100, 1) if valid else None,
         "confidence": round(confidence, 4),
         "needle_point": needle_point,
         "error": None if valid else "low_confidence",

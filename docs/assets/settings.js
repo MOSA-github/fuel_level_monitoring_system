@@ -1,6 +1,6 @@
 import {demoImagePath,prepareDemoImage} from './demo-image.mjs';
 import {publishGauge} from './github-publish.mjs';
-import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261013-1';
+import {pointKeys,perspectiveKeys,fields,numeric,geometry,validate,validateAll,analyzeImageData} from './calibration.mjs?v=20261013-3';
 const $=id=>document.getElementById(id),say=t=>$('status').textContent=t;
 const repo='MOSA-github/fuel_level_monitoring_system',key='mosa-gauge-draft-v1';
 const publicDeviceUrl=id=>{const safe=String(id||'').trim();return safe&&/^[A-Za-z0-9_-]{1,80}$/.test(safe)?new URL('data/devices/'+safe+'.json',location.href).href:'';};
@@ -100,7 +100,7 @@ async function runInstantAnalysis(){
     testNeedlePoint=result.needle_point;testState=result.status;draw();
     if(result.status==='normal'){
       resultBox.className='test-result success';
-      resultBox.innerHTML=`<strong>${result.value} ${c.unit}</strong>（${result.percent}%） / 信頼度 ${result.confidence.toFixed(4)}<br><span>ピンク線が自動認識した針です。この結果は保存されません。</span>`;
+      resultBox.innerHTML=`<strong>${result.value.toFixed(1)} ${c.unit}</strong>（${result.percent.toFixed(1)}%） / 信頼度 ${result.confidence.toFixed(4)}<br><span>ピンク線が自動認識した針です。この結果は保存されません。</span>`;
       say('針の解析テストが完了しました。GitHubへの保存はまだ行っていません。');
     }else{
       resultBox.className='test-result error';

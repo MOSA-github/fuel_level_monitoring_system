@@ -1,4 +1,4 @@
-import {validate,validateAll} from './calibration.mjs?v=20261013-1';
+import {validate,validateAll} from './calibration.mjs?v=20261013-3';
 function base64Utf8(text){const bytes=new TextEncoder().encode(text);let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
 function decodeFile(file){return new TextDecoder().decode(Uint8Array.from(atob(file.content.replace(/\s/g,'')),c=>c.charCodeAt(0)));}
 export async function publishGauge(api,c,oldId,base,pendingImage){
