@@ -55,5 +55,45 @@
       ]
     },
     "demo_image": "assets/demo-images/1c01a34e6d9a828470c963a12e8097aba061b0e4f79840de54c0f7d7e26d7be7.png"
+  },
+  {
+    "id": "gauge-2",
+    "camera_id": "2",
+    "facility_id": "gauge",
+    "device_id": "2",
+    "name": "水位計",
+    "type": "water",
+    "unit": "%",
+    "min_value": 0,
+    "max_value": 100,
+    "direction": "cw",
+    "interval_minutes": 5,
+    "enabled": true,
+    "is_demo": true,
+    "polarity": "dark",
+    "min_confidence": 0.35,
+    "inner_radius": 0.3,
+    "outer_radius": 0.72,
+    "perspective_enabled": false,
+    "points": {
+      "min": [
+        0.46245982380280715,
+        0.24311436323275507
+      ],
+      "center": [
+        0.5098157097602146,
+        0.17734111650086326
+      ],
+      "max": [
+        0.557171595717622,
+        0.24837622297130643
+      ]
+    },
+    "image_size": [
+      2352,
+      1323
+    ],
+    "perspective_points": {},
+    "demo_image": "assets/demo-images/a501a10f3ff0db46c13877b7583a1faae3325495344c164ad4852a9bab6f7775.png"
   }
 ]
