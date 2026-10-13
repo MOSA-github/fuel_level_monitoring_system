@@ -34,7 +34,7 @@ def fetch_image(url):
     return cv2.imdecode(np.frombuffer(raw,np.uint8),cv2.IMREAD_COLOR)
 
 
-def collect(force=False):
+def collect(force=False, scheduled=False):
     configs = json.loads((ROOT/"config/gauges.json").read_text(encoding="utf-8"))
     if not isinstance(configs,list) or len(configs)>100:
         raise ValueError("Expected at most 100 gauge configs")
@@ -50,6 +50,9 @@ def collect(force=False):
     previous = json.loads(output.read_text(encoding="utf-8")) if output.exists() else {"readings":[]}
     old = {x["id"]:x for x in previous["readings"]}
     now=datetime.now(timezone.utc); stamp=now.isoformat()
+    # Compare UTC five-minute slots for scheduled jobs. Runner startup jitter
+    # must not turn a requested 5-minute interval into 10 minutes.
+    due_time=now.replace(minute=(now.minute//5)*5,second=0,microsecond=0) if scheduled else now
     rows=[]; attempted=0
     for c in configs:
         # Public integration contract: facility_id + device_id identify the hospital equipment.
@@ -62,8 +65,12 @@ def collect(force=False):
             rows.append(dict(base,status="disabled",value=None,updated_at=None,error="not_configured")); continue
         prev=old.get(c["id"],{})
         last=prev.get("attempted_at")
-        if last and prev.get("config_hash")==digest and not force and now-datetime.fromisoformat(last)<timedelta(minutes=c["interval_minutes"]):
-            rows.append(prev);continue
+        if last and prev.get("config_hash")==digest and not force:
+            last_time=datetime.fromisoformat(last)
+            if scheduled:
+                last_time=last_time.replace(minute=(last_time.minute//5)*5,second=0,microsecond=0)
+            if due_time-last_time<timedelta(minutes=c["interval_minutes"]):
+                rows.append(prev);continue
         attempted+=1
         try:
             if c["is_demo"]:
@@ -106,5 +113,5 @@ def collect(force=False):
 
 
 if __name__=="__main__":
-    parser=argparse.ArgumentParser();parser.add_argument("--force",action="store_true")
-    collect(parser.parse_args().force)
+    parser=argparse.ArgumentParser();parser.add_argument("--force",action="store_true");parser.add_argument("--scheduled",action="store_true")
+    args=parser.parse_args();collect(args.force, args.scheduled)

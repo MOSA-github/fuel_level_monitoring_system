@@ -1,0 +1,12 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readingStatus} from '../docs/assets/reading-status.mjs';
+const now=Date.parse('2026-10-13T03:00:00Z');
+const row={status:'normal',value:0,interval_minutes:5,updated_at:'2026-10-13T02:59:00Z',attempted_at:'2026-10-13T02:59:00Z'};
+test('fresh successful zero is a valid reading',()=>{const s=readingStatus(row,now);assert.equal(s.valid,true);assert.equal(s.delayed,false);});
+test('show a delayed schedule before expiry',()=>{const s=readingStatus({...row,updated_at:'2026-10-13T02:48:00Z',attempted_at:'2026-10-13T02:48:00Z'},now);assert.equal(s.valid,true);assert.equal(s.delayed,true);assert.equal(s.ageMinutes,12);});
+test('hours without a run are stale and hide the value',()=>{const s=readingStatus({...row,updated_at:'2026-10-13T00:00:00Z',attempted_at:'2026-10-13T00:00:00Z'},now);assert.equal(s.valid,false);assert.equal(s.stale,true);assert.equal(s.ageMinutes,180);});
+test('recent failed attempt is an error, not a stalled schedule',()=>{const s=readingStatus({...row,status:'error',value:null,updated_at:null},now);assert.equal(s.valid,false);assert.equal(s.delayed,false);assert.equal(s.label,'取得・解析エラー');});
+test('disabled gauges do not show scheduler delays',()=>{assert.equal(readingStatus({...row,status:'disabled',attempted_at:'2020-01-01T00:00:00Z'},now).delayed,false);});
+test('long intervals retain their proper expiry and legacy timestamp works',()=>{const s=readingStatus({...row,interval_minutes:60,attempted_at:undefined,updated_at:'2026-10-13T01:00:00Z'},now);assert.equal(s.valid,true);assert.equal(s.delayed,false);});
+test('invalid/future success times never show valid values',()=>{assert.equal(readingStatus({...row,updated_at:null},now).valid,false);assert.equal(readingStatus({...row,updated_at:'2026-10-14T00:00:00Z'},now).valid,false);});
