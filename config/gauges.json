@@ -95,5 +95,45 @@
     ],
     "perspective_points": {},
     "demo_image": "assets/demo-images/a501a10f3ff0db46c13877b7583a1faae3325495344c164ad4852a9bab6f7775.png"
+  },
+  {
+    "id": "power-3",
+    "camera_id": "3",
+    "facility_id": "power-3",
+    "device_id": "3",
+    "name": "電力",
+    "type": "power",
+    "unit": "kWh",
+    "min_value": 0,
+    "max_value": 10000,
+    "direction": "cw",
+    "interval_minutes": 5,
+    "enabled": true,
+    "is_demo": true,
+    "polarity": "dark",
+    "min_confidence": 0.35,
+    "inner_radius": 0.3,
+    "outer_radius": 0.72,
+    "perspective_enabled": false,
+    "points": {
+      "min": [
+        0.33905190997710716,
+        0.36329242769305997
+      ],
+      "center": [
+        0.5135059605290347,
+        0.5332914617894572
+      ],
+      "max": [
+        0.6835247386093032,
+        0.3725651022801362
+      ]
+    },
+    "image_size": [
+      715,
+      684
+    ],
+    "perspective_points": {},
+    "demo_image": "assets/demo-images/1c01a34e6d9a828470c963a12e8097aba061b0e4f79840de54c0f7d7e26d7be7.png"
   }
 ]
