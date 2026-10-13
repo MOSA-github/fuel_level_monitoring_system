@@ -1,4 +1,5 @@
 name: Analyze gauges and publish Pages
+run-name: ${{ inputs.scheduled && '定期解析（サーバー補助）' || 'Analyze gauges and publish Pages' }}
 on:
   push:
     branches: [main]
@@ -7,7 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: Ignore per-gauge intervals
+        description: 設定間隔を無視して今すぐ解析
+        type: boolean
+        default: false
+      scheduled:
+        description: サーバー補助タイマーの定期解析（通常はOFF）
         type: boolean
         default: false
 permissions:
@@ -41,7 +46,7 @@ jobs:
         env:
           CAMERA_SOURCES_JSON: ${{ secrets.CAMERA_SOURCES_JSON }}
           FORCE: ${{ inputs.force || 'false' }}
-          SCHEDULED: ${{ github.event_name == 'schedule' }}
+          SCHEDULED: ${{ github.event_name == 'schedule' || inputs.scheduled || false }}
         run: |
           args=()
           if [ "$FORCE" = "true" ]; then args+=("--force"); fi

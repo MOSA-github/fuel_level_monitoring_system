@@ -170,9 +170,11 @@ python -m http.server 8099 --directory docs
 
 GitHub ActionsのCronは毎時2・7・12…57分（UTC）、5分おきに起動を依頼する。混雑する毎時0分を避ける構成。
 GitHubのscheduleには起動の遅延・取りこぼしがあるため、厳密な5分ごとの解析完了やPages公開を保証しない。
+補助起動：`data_management_server_private`の`deploy/systemd/mosademy-gauge-dispatch.timer`が同じActionsを5分ごとに`scheduled=true`で起動する構成にも対応。テスト・解析・公開手順は共通で、進行中・同じ5分枠の重複を避ける。履歴の「定期解析（サーバー補助）」で確認できる。GitHubのschedule・push・通常の手動実行も維持する。
 公式仕様: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
 
 定期実行時は `collect.py --scheduled` でUTCの5分枠を比較する。前回の起動より数秒早かっただけで5分間隔の計器をスキップしない。
+手動実行の「設定間隔を無視して今すぐ解析」（`force`）は通常OFFでよい。「サーバー補助タイマーの定期解析」（`scheduled`）は補助タイマーが指定する項目で、通常の手動実行ではOFFのままにする。
 同じ5分枠での重複解析を避け、60分など各計器に設定した間隔も維持する。手動実行では従来の経過時間判定、forceでは間隔を無視して再解析する。
 
 公開画面には設定間隔・最終解析時刻・最終成功時刻・ページの確認時刻を表示する。

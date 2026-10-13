@@ -14,6 +14,17 @@ class Clock(datetime):
         return cls.current
 
 class ScheduledIntervalTests(unittest.TestCase):
+    def test_server_timer_dispatch_keeps_existing_validated_workflow(self):
+        workflow=(Path(__file__).resolve().parents[1]/'.github/workflows/monitor.yml').read_text(encoding='utf-8')
+        self.assertIn('      scheduled:\n',workflow)
+        self.assertIn("github.event_name == 'schedule' || inputs.scheduled || false",workflow)
+        self.assertIn("- cron: '2-59/5 * * * *'",workflow)
+        self.assertIn('    branches: [main]',workflow)
+        self.assertIn('cancel-in-progress: false',workflow)
+        steps=['Test detector and calibration','Collect due readings','Persist public readings','Deploy public results']
+        positions=[workflow.index(step) for step in steps]
+        self.assertEqual(positions,sorted(positions))
+
     def run_times(self,interval,times,scheduled):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/"config").mkdir();(root/"docs/data").mkdir(parents=True)
