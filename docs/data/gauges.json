@@ -103,7 +103,7 @@
     "device_id": "3",
     "name": "電力",
     "type": "power",
-    "unit": "kWh",
+    "unit": "W",
     "min_value": 0,
     "max_value": 10000,
     "direction": "cw",
